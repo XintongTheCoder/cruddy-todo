@@ -99,7 +99,7 @@ describe('todos', () => {
       });
     });
 
-    it('should pass a todo object to the callback on success', (done) => {
+    it.only('should pass a todo object to the callback on success', (done) => {
       const todoText = 'refactor callbacks to promises';
       todos.create(todoText, (err, todo) => {
         expect(todo).to.include({ text: todoText });

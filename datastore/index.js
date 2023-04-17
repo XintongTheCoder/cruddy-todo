@@ -3,14 +3,26 @@ const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
 
-var items = {};
+// var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
+const writeTodo = (id, text, callback) => {
+  fs.writeFile(path.join(exports.dataDir, `${id}.txt`), text, (err) => {
+    if (err) {
+      throw 'Failed to write todo';
+    } else {
+      callback(null, { id, text });
+    }
+  });
+};
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, { id, text });
+  // var id = counter.getNextUniqueId();
+  // items[id] = text;
+  // callback(null, { id, text });
+  counter.getNextUniqueId((err, id) => {
+    writeTodo(id, text, callback);
+  });
 };
 
 exports.readAll = (callback) => {
