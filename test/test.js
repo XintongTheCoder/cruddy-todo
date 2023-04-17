@@ -16,8 +16,8 @@ const initializeTestCounter = (id = '') => {
 };
 
 const cleanTestDatastore = () => {
-  fs.readdirSync(todos.dataDir).forEach(
-    todo => fs.unlinkSync(path.join(todos.dataDir, todo))
+  fs.readdirSync(todos.dataDir).forEach((todo) =>
+    fs.unlinkSync(path.join(todos.dataDir, todo))
   );
 };
 
@@ -53,12 +53,13 @@ describe('getNextUniqueId', () => {
   it('should update the counter file with the next value', (done) => {
     fs.writeFileSync(counter.counterFile, '00371');
     counter.getNextUniqueId((err, id) => {
-      const counterFileContents = fs.readFileSync(counter.counterFile).toString();
+      const counterFileContents = fs
+        .readFileSync(counter.counterFile)
+        .toString();
       expect(counterFileContents).to.equal('00372');
       done();
     });
   });
-
 });
 
 describe('todos', () => {
@@ -90,7 +91,9 @@ describe('todos', () => {
     it('should only save todo text contents in file', (done) => {
       const todoText = 'walk the dog';
       todos.create(todoText, (err, todo) => {
-        const todoFileContents = fs.readFileSync(path.join(todos.dataDir, `${todo.id}.txt`)).toString();
+        const todoFileContents = fs
+          .readFileSync(path.join(todos.dataDir, `${todo.id}.txt`))
+          .toString();
         expect(todoFileContents).to.equal(todoText);
         done();
       });
@@ -119,18 +122,23 @@ describe('todos', () => {
     it('should return an array with all saved todos', (done) => {
       const todo1text = 'todo 1';
       const todo2text = 'todo 2';
-      const expectedTodoList = [{ id: '00001', text: '00001' }, { id: '00002', text: '00002' }];
+      const expectedTodoList = [
+        { id: '00001', text: '00001' },
+        { id: '00002', text: '00002' },
+      ];
       todos.create(todo1text, (err, todo) => {
         todos.create(todo2text, (err, todo) => {
           todos.readAll((err, todoList) => {
             expect(todoList).to.have.lengthOf(2);
-            expect(todoList).to.deep.include.members(expectedTodoList, 'NOTE: Text field should use the Id initially');
+            expect(todoList).to.deep.include.members(
+              expectedTodoList,
+              'NOTE: Text field should use the Id initially'
+            );
             done();
           });
         });
       });
     });
-
   });
 
   describe('readOne', () => {
@@ -160,7 +168,9 @@ describe('todos', () => {
 
     it('should not change the counter', (done) => {
       todos.update('00001', 'updated todo', (err, todo) => {
-        const counterFileContents = fs.readFileSync(counter.counterFile).toString();
+        const counterFileContents = fs
+          .readFileSync(counter.counterFile)
+          .toString();
         expect(counterFileContents).to.equal('00001');
         done();
       });
@@ -170,7 +180,9 @@ describe('todos', () => {
       const todoId = '00001';
       const updatedTodoText = 'updated todo';
       todos.update(todoId, updatedTodoText, (err, todo) => {
-        const todoFileContents = fs.readFileSync(path.join(todos.dataDir, `${todoId}.txt`)).toString();
+        const todoFileContents = fs
+          .readFileSync(path.join(todos.dataDir, `${todoId}.txt`))
+          .toString();
         expect(todoFileContents).to.equal(updatedTodoText);
         done();
       });
@@ -194,7 +206,9 @@ describe('todos', () => {
 
     it('should not change the counter', (done) => {
       todos.delete('00001', (err) => {
-        const counterFileContents = fs.readFileSync(counter.counterFile).toString();
+        const counterFileContents = fs
+          .readFileSync(counter.counterFile)
+          .toString();
         expect(counterFileContents).to.equal('00001');
         done();
       });
@@ -218,5 +232,4 @@ describe('todos', () => {
       });
     });
   });
-
 });
