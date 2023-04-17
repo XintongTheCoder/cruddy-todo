@@ -51,13 +51,28 @@ exports.readAll = (callback) => {
   readTodos(callback);
 };
 
+const readTodo = (id, callback) => {
+  fs.readFile(path.join(exports.dataDir, `${id}.txt`), (err, data) => {
+    if (err) {
+      callback(new Error(`No item with id: ${id}`));
+    } else {
+      // { id, text: todoText }
+      callback(null, {
+        id: id,
+        text: data.toString(),
+      });
+    }
+  });
+};
+
 exports.readOne = (id, callback) => {
-  var text = items[id];
-  if (!text) {
-    callback(new Error(`No item with id: ${id}`));
-  } else {
-    callback(null, { id, text });
-  }
+  // var text = items[id];
+  // if (!text) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, { id, text });
+  // }
+  readTodo(id, callback);
 };
 
 exports.update = (id, text, callback) => {
