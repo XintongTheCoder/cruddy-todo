@@ -25,11 +25,30 @@ exports.create = (text, callback) => {
   });
 };
 
-exports.readAll = (callback) => {
-  var data = _.map(items, (text, id) => {
-    return { id, text };
+const readTodos = (callback) => {
+  fs.readdir(exports.dataDir, (err, filenames) => {
+    if (err) {
+      throw 'Failed to read todos';
+    } else {
+      let data = [];
+      //  { id: '00001', text: '00001' },
+      filenames.forEach((filename) => {
+        data.push({
+          id: filename.slice(0, -4),
+          text: filename.slice(0, -4),
+        });
+      });
+      callback(null, data);
+    }
   });
-  callback(null, data);
+};
+
+exports.readAll = (callback) => {
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // callback(null, data);
+  readTodos(callback);
 };
 
 exports.readOne = (id, callback) => {
