@@ -25,7 +25,11 @@ exports.create = (text, callback) => {
   });
 };
 
-const readTodos = (callback) => {
+exports.readAll = (callback) => {
+  // var data = _.map(items, (text, id) => {
+  //   return { id, text };
+  // });
+  // callback(null, data);
   fs.readdir(exports.dataDir, (err, filenames) => {
     if (err) {
       throw 'Failed to read todos';
@@ -43,15 +47,13 @@ const readTodos = (callback) => {
   });
 };
 
-exports.readAll = (callback) => {
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
-  // });
-  // callback(null, data);
-  readTodos(callback);
-};
-
-const readTodo = (id, callback) => {
+exports.readOne = (id, callback) => {
+  // var text = items[id];
+  // if (!text) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, { id, text });
+  // }
   fs.readFile(path.join(exports.dataDir, `${id}.txt`), (err, data) => {
     if (err) {
       callback(new Error(`No item with id: ${id}`));
@@ -63,16 +65,6 @@ const readTodo = (id, callback) => {
       });
     }
   });
-};
-
-exports.readOne = (id, callback) => {
-  // var text = items[id];
-  // if (!text) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback(null, { id, text });
-  // }
-  readTodo(id, callback);
 };
 
 exports.update = (id, text, callback) => {
