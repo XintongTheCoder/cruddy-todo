@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const _ = require('underscore');
 const counter = require('./counter');
+var Promise = require('bluebird');
 
 // var items = {};
 
@@ -25,26 +26,50 @@ exports.create = (text, callback) => {
   });
 };
 
-exports.readAll = (callback) => {
-  // var data = _.map(items, (text, id) => {
-  //   return { id, text };
+exports.readAll = () => {
+  // fs.readdir(exports.dataDir, (err, filenames) => {
+  //   if (err) {
+  //     throw 'Failed to read todos';
+  //   } else {
+  //     let data = [];
+  //     //  { id: '00001', text: '00001' },
+  //     filenames.forEach((filename) => {
+  //       data.push({
+  //         id: filename.slice(0, -4),
+  //         text: filename.slice(0, -4),
+  //       });
+  //     });
+  //     callback(null, data);
+  //   }
   // });
-  // callback(null, data);
-  fs.readdir(exports.dataDir, (err, filenames) => {
-    if (err) {
-      throw 'Failed to read todos';
-    } else {
-      let data = [];
-      //  { id: '00001', text: '00001' },
-      filenames.forEach((filename) => {
-        data.push({
-          id: filename.slice(0, -4),
-          text: filename.slice(0, -4),
-        });
-      });
-      callback(null, data);
-    }
-  });
+  return new Promise((resolve, reject) => {
+    fs.readdir(exports.dataDir, (err, filenames) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(filenames);
+      }
+    });
+  })
+    .catch((err) => console.log(err))
+    .then((filenames) =>
+      Promise.all(
+        filenames.map(
+          (filename) =>
+            new Promise((resolve, reject) => {
+              fs.readFile(path.join(exports.dataDir, filename), (err, text) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  const id = filename.slice(0, -4);
+                  text = text.toString();
+                  resolve({ id, text });
+                }
+              });
+            })
+        )
+      )
+    );
 };
 
 exports.readOne = (id, callback) => {
