@@ -4,32 +4,27 @@ const _ = require('underscore');
 const counter = require('./counter');
 var Promise = require('bluebird');
 
-// var items = {};
-
 // Public API - Fix these CRUD functions ///////////////////////////////////////
-const writeTodo = (id, text, callback) => {
-  fs.writeFile(path.join(exports.dataDir, `${id}.txt`), text, (err) => {
-    if (err) {
-      throw 'Failed to write todo';
-    } else {
-      callback(null, { id, text });
-    }
-  });
-};
 
 exports.create = (text, callback) => {
-  // var id = counter.getNextUniqueId();
-  // items[id] = text;
-  // callback(null, { id, text });
   counter.getNextUniqueId((err, id) => {
-    writeTodo(id, text, callback);
+    if (err) {
+      return callback(err); // In case of error, terminate the program before writeFile
+    }
+    fs.writeFile(path.join(exports.dataDir, `${id}.txt`), text, (err) => {
+      if (err) {
+        callback(err); // throw error will terminate the program
+      } else {
+        callback(null, { id, text });
+      }
+    });
   });
 };
 
 exports.readAll = () => {
   // fs.readdir(exports.dataDir, (err, filenames) => {
   //   if (err) {
-  //     throw 'Failed to read todos';
+  //     return callback(err);
   //   } else {
   //     let data = [];
   //     //  { id: '00001', text: '00001' },
@@ -42,48 +37,28 @@ exports.readAll = () => {
   //     callback(null, data);
   //   }
   // });
-  return new Promise((resolve, reject) => {
-    fs.readdir(exports.dataDir, (err, filenames) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(filenames);
-      }
-    });
-  })
-    .catch((err) => console.log(err))
+  return Promise.promisify(fs.readdir)(exports.dataDir)
+    .catch((err) => console.error(err))
     .then((filenames) =>
       Promise.all(
-        filenames.map(
-          (filename) =>
-            new Promise((resolve, reject) => {
-              fs.readFile(path.join(exports.dataDir, filename), (err, text) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  const id = filename.slice(0, -4);
-                  text = text.toString();
-                  resolve({ id, text });
-                }
-              });
-            })
+        filenames.map((filename) =>
+          Promise.promisify(fs.readFile)(path.join(exports.dataDir, filename))
         )
+      ).then((todos) =>
+        todos.map((todo, index) => ({
+          id: filenames[index].slice(0, -4), // path.basename(filename, '.txt)
+          text: todo.toString(),
+        }))
       )
-    );
+    )
+    .catch((err) => console.error(err));
 };
 
 exports.readOne = (id, callback) => {
-  // var text = items[id];
-  // if (!text) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback(null, { id, text });
-  // }
   fs.readFile(path.join(exports.dataDir, `${id}.txt`), (err, data) => {
     if (err) {
       callback(new Error(`No item with id: ${id}`));
     } else {
-      // { id, text: todoText }
       callback(null, {
         id: id,
         text: data.toString(),
@@ -93,13 +68,6 @@ exports.readOne = (id, callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  // var item = items[id];
-  // if (!item) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   items[id] = text;
-  //   callback(null, { id, text });
-  // }
   fs.exists(path.join(exports.dataDir, `${id}.txt`), (exists) => {
     if (!exists) {
       callback(new Error(`No item with id: ${id}`));
@@ -116,27 +84,8 @@ exports.update = (id, text, callback) => {
 };
 
 exports.delete = (id, callback) => {
-  // var item = items[id];
-  // delete items[id];
-  // if (!item) {
-  //   // report an error if item not found
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback();
-  // }
-  fs.exists(path.join(exports.dataDir, `${id}.txt`), (exists) => {
-    if (!exists) {
-      callback(new Error(`No item with id: ${id}`));
-    } else {
-      fs.unlink(path.join(exports.dataDir, `${id}.txt`), (err) => {
-        if (err) {
-          callback(new Error('Failed to delete file'));
-        } else {
-          console.log('Deleted!');
-          callback();
-        }
-      });
-    }
+  fs.unlink(path.join(exports.dataDir, `${id}.txt`), (err) => {
+    callback(err);
   });
 };
 
